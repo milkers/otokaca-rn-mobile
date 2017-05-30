@@ -1,0 +1,20 @@
+{
+  "brandArr": [
+    {
+      "label": "Alfa Romeo",
+      "value": "1958"
+    },
+    {
+      "label": "Audi",
+      "value": "1959",
+    },
+    {
+      "label": "BMC",
+      "value": "5293",
+    },
+    {
+      "label": "BMW",
+      "value": "1960",
+    },
+  ]
+}
