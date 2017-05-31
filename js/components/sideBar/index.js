@@ -24,12 +24,12 @@ class SideBar extends Component {
   render() {
     return (
       <Content style={styles.sidebar} >
-        <ListItem button onPress={() => { Actions.home(); this.props.closeDrawer(); }} >
+        {/*}<ListItem button onPress={() => { Actions.home(); this.props.closeDrawer(); }} >
           <Text>Home</Text>
         </ListItem>
         <ListItem button onPress={() => { Actions.blankPage(); this.props.closeDrawer(); }} >
           <Text>Blank Page</Text>
-        </ListItem>
+        </ListItem>*/}
 				<ListItem button onPress={() => { Actions.piyasaDegeri(); this.props.closeDrawer(); }} >
           <Text>Piyasa Degeri</Text>
         </ListItem>

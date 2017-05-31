@@ -16,6 +16,7 @@ import styles from './styles';
 import brandList from './brandList.json';
 const { brandArr } = brandList;
 
+
 class PiyasaDegeri extends Component {
 
   static propTypes = {
@@ -37,10 +38,10 @@ class PiyasaDegeri extends Component {
       selectedVitesLabel: 'Lutfen vites seciniz',
       selectedYilValue: '-1',
       selectedYilLabel: 'Lutfen yil seciniz',
-      brandList: [],
-      seriList: [],
-      yilList: [],
-    }
+      brandList: [], // Holds Item components
+      seriList: [], // Holds Item components
+      yilList: [], // Holds Item components
+    };
   }
 
   componentWillMount() {
@@ -149,9 +150,25 @@ class PiyasaDegeri extends Component {
   onVitesValueChange( vites: string ){
     console.log('onVitesValueChange: ', vites);
 
-    this.setState({
-      selectedVitesValue: vites,
-    });
+    if (vites === '1') {
+      this.setState({
+        selectedVitesValue: vites,
+        selectedVitesLabel: 'Manuel',
+      });
+    }
+    else if (vites === '2') {
+      this.setState({
+        selectedVitesValue: vites,
+        selectedVitesLabel: 'Otomatik',
+      });
+    }
+    else {
+      this.setState({
+        selectedVitesValue: '-1',
+        selectedVitesLabel: 'Lutfen vites seciniz',
+      });
+    }
+
   }
 
   onYilValueChange( yil: string ){
@@ -165,6 +182,7 @@ class PiyasaDegeri extends Component {
 
   _getBrandItemList() {
     let brandItemList = [];
+    let tmpBrandLookup= {}
 
     // default value
     brandItemList.push(
@@ -175,16 +193,20 @@ class PiyasaDegeri extends Component {
       // console.log('tmpBrand: ', tmpBrand);
       brandItemList.push(
         <Item label={tmpBrand.label} value={tmpBrand.value} key={tmpBrand.value}/>
-      )
+      );
+
+      tmpBrandLookup[tmpBrand.value] = tmpBrand.label;
     }
 
     this.setState({
       brandList: brandItemList,
     });
+    this._brandLookup = tmpBrandLookup; // llokup for brandId to brand name.
   }
 
   _getBrandSeriItemList(brandSeriList) {
     let brandSeriItemList = [];
+    let tmpSeriLookup = {};
 
     console.log('_getBrandSeriItemList: ', brandSeriList);
 
@@ -196,13 +218,15 @@ class PiyasaDegeri extends Component {
     for (let tmpSeri of brandSeriList) {
       brandSeriItemList.push(
         <Item label={tmpSeri.Seri1} value={tmpSeri.ID} key={tmpSeri.ID}/>
-      )
+      );
+
+      tmpSeriLookup[tmpSeri.ID] = tmpSeri.Seri1;
     }
 
     this.setState({
       seriList: brandSeriItemList,
     });
-
+    this._seriLookup = tmpSeriLookup;
   }
 
   _getBrandSeriYilItemList(brandSeriYilList) {
@@ -228,14 +252,27 @@ class PiyasaDegeri extends Component {
   }
 
   _onCheckoutPressed() {
+
     if (this.state.isMarkaSeriVitesFilled) {
-      console.log('piyasa degeri hazir.');
+
+      let tmpOto = {
+        marka: this._brandLookup[this.state.selectedBrandValue],
+        seri: this._seriLookup[this.state.selectedSeriValue],
+        vites: this.state.selectedVitesLabel,
+        markaId: this.state.selectedBrandValue,
+        seriId: this.state.selectedSeriValue,
+        vitesId: this.state.selectedVitesValue,
+        yil: this.state.selectedYilValue,
+      };
+      // console.log('piyasa degeri hazir: ', tmpOto);
+      this.props.setOto(tmpOto); // write current oto to redux.
+      Actions.piyasaDegeriSonuc();
     }
     else {
       console.log('piyasa degerini gormek icin marka, seri ve vites alanlarini doldurunuz.');
     }
-  }
 
+  }
 
 
   render() {
@@ -267,7 +304,6 @@ class PiyasaDegeri extends Component {
                       android="md-checkmark-circle-outline"
                       style={{ color: 'red'}} />
               }
-
             </Button>
           </Right>
         </Header>
@@ -339,7 +375,7 @@ class PiyasaDegeri extends Component {
 function bindAction(dispatch) {
   return {
     openDrawer: () => dispatch(openDrawer()),
-    setOto: () => dispatch(setOto()),
+    setOto: (otoProps) => dispatch(setOto(otoProps)),
   };
 }
 

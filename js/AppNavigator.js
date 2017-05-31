@@ -11,6 +11,7 @@ import Login from './components/login/';
 import Home from './components/home/';
 import BlankPage from './components/blankPage';
 import PiyasaDegeri from './components/piyasaDegeri';
+import PiyasaDegeriSonuc from './components/piyasaDegeriSonuc';
 import SideBar from './components/sideBar';
 import { statusBarColor } from './themes/base-theme';
 
@@ -56,6 +57,8 @@ class AppNavigator extends Component {
         return <BlankPage />;
       case 'piyasaDegeri':
         return <PiyasaDegeri />;
+      case 'piyasaDegeriSonuc':
+        return <PiyasaDegeriSonuc />;
       default :
         return <Login />;
     }
@@ -100,6 +103,7 @@ class AppNavigator extends Component {
             <Scene key="home" component={Home} />
             <Scene key="blankPage" component={BlankPage} />
             <Scene key="piyasaDegeri" component={PiyasaDegeri} />
+            <Scene key="piyasaDegeriSonuc" component={PiyasaDegeriSonuc} />
           </Scene>
         </RouterWithRedux>
       </Drawer>
