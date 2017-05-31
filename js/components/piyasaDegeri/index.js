@@ -38,9 +38,12 @@ class PiyasaDegeri extends Component {
       selectedVitesLabel: 'Lutfen vites seciniz',
       selectedYilValue: '-1',
       selectedYilLabel: 'Lutfen yil seciniz',
+      selectedModelValue: '-1',
+      selectedModelLabel: 'Lutfen model seciniz',
       brandList: [], // Holds Item components
       seriList: [], // Holds Item components
       yilList: [], // Holds Item components
+      modelList: [],
     };
   }
 
@@ -48,9 +51,11 @@ class PiyasaDegeri extends Component {
     this._getBrandItemList();
     this._getBrandSeriItemList(this.state.seriList);
     this._getBrandSeriYilItemList(this.state.yilList);
+    this._getModelByMarkaSeriYil(this.state.modelList);
   }
 
   componentWillUpdate(nextProps, nextState) {
+    // Decide for checkout button's state.
     if (this.state.selectedBrandValue !== nextState.selectedBrandValue ||
         this.state.selectedSeriValue !== nextState.selectedSeriValue ||
         this.state.selectedVitesValue !== nextState.selectedVitesValue) {
@@ -72,9 +77,7 @@ class PiyasaDegeri extends Component {
         // console.log('cwu, isMarkaSeriVitesFilled - false');
 
       }
-
     }
-
   }
 
   onBrandValueChange (value: string) {
@@ -90,20 +93,21 @@ class PiyasaDegeri extends Component {
         markaId: value,
       })
     }).then(responseData => {
-      // console.log('response : ', value, responseData.json());
       responseData.json().then( response => {
 
-        console.log('response: ', response);
-
+        // console.log('response: ', response);
         this.setState({
           selectedBrandValue : value,
           selectedSeriValue: '-1',
           selectedYilValue: '-1',
           yilList: [],
+          selectedModelValue: '-1',
+          modelList: [],
         });
 
         this._getBrandSeriItemList(response);
         this._getBrandSeriYilItemList([]); // initialize yilItemList
+        this._getModelByMarkaSeriYil([]);
 
       });
 
@@ -129,15 +133,17 @@ class PiyasaDegeri extends Component {
       // console.log('response : ', value, responseData.json());
       responseData.json().then( response => {
 
-        console.log('GetYilBySeriMarka response: ', response);
-
+        // console.log('GetYilBySeriMarka response: ', response);
         this.setState({
           selectedSeriValue: seri,
           selectedYilValue: '-1',
           yilList: [],
+          selectedModelValue: '-1',
+          modelList: [],
         });
 
         this._getBrandSeriYilItemList(response);
+        this._getModelByMarkaSeriYil([]);
 
       });
 
@@ -174,8 +180,41 @@ class PiyasaDegeri extends Component {
   onYilValueChange( yil: string ){
     console.log('onYilValueChange: ', yil);
 
+    fetch('https://otokaca.com/ikinci-el-fiyatlari/GetModelByMSY', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        markaId: this.state.selectedBrandValue,
+        seriId: this.state.selectedSeriValue,
+        yilId: yil,
+      })
+    }).then(responseData => {
+      responseData.json().then( response => {
+
+        // console.log('GetModelByMSY response: ', response);
+        this.setState({
+          selectedYilValue: yil,
+          selectedModelValue: '-1',
+        });
+
+        this._getModelByMarkaSeriYil(response);
+
+      });
+
+    }).catch(err => {
+      console.log('GetModelByMSY err: ', err);
+    })
+
+  }
+
+  onModelValueChange( model: string) {
+    console.log('onModelValueChange, selected model: ', model);
+
     this.setState({
-      selectedYilValue: yil,
+      selectedModelValue: model,
     });
   }
 
@@ -208,8 +247,7 @@ class PiyasaDegeri extends Component {
     let brandSeriItemList = [];
     let tmpSeriLookup = {};
 
-    console.log('_getBrandSeriItemList: ', brandSeriList);
-
+    // console.log('_getBrandSeriItemList: ', brandSeriList);
     // default value
     brandSeriItemList.push(
       <Item label='Lutfen seri seciniz.' value='-1' key='-1'/>
@@ -230,8 +268,7 @@ class PiyasaDegeri extends Component {
   }
 
   _getBrandSeriYilItemList(brandSeriYilList) {
-    console.log('_getBrandSeriYilItemList: ', brandSeriYilList);
-
+    // console.log('_getBrandSeriYilItemList: ', brandSeriYilList);
     let brandSeriYilItemList = [];
 
     // default value
@@ -251,6 +288,30 @@ class PiyasaDegeri extends Component {
 
   }
 
+  _getModelByMarkaSeriYil(modelListByMSY) {
+    // console.log('_getModelByMarkaSeriYil: ', modelListByMSY);
+    let modelItemList = [];
+    let tmpModelLookup = {};
+
+    // default value
+    modelItemList.push(
+      <Item label='Lutfen model seciniz.' value='-1' key='-1'/>
+    );
+
+    for (let tmpModel of modelListByMSY) {
+      modelItemList.push(
+        <Item label={tmpModel.Model1} value={tmpModel.ID} key={tmpModel.ID}/>
+      )
+
+      tmpModelLookup[tmpModel.ID] = tmpModel.Model1;
+    }
+
+    this.setState({
+      modelList: modelItemList,
+    });
+    this._modelLookup = tmpModelLookup;
+  }
+
   _onCheckoutPressed() {
 
     if (this.state.isMarkaSeriVitesFilled) {
@@ -263,6 +324,8 @@ class PiyasaDegeri extends Component {
         seriId: this.state.selectedSeriValue,
         vitesId: this.state.selectedVitesValue,
         yil: this.state.selectedYilValue,
+        model: this._modelLookup[this.state.selectedModelValue],
+        modelId: this.state.selectedModelValue,
       };
       // console.log('piyasa degeri hazir: ', tmpOto);
       this.props.setOto(tmpOto); // write current oto to redux.
@@ -362,6 +425,19 @@ class PiyasaDegeri extends Component {
             selectedValue={this.state.selectedYilValue}
             onValueChange={this.onYilValueChange.bind(this)}>
             {this.state.yilList}
+          </Picker>
+
+          <Separator bordered>
+            <Text>Model</Text>
+          </Separator>
+
+          <Picker
+            supportedOrientations={['portrait']}
+            iosHeader="Yil"
+            mode="dropdown"
+            selectedValue={this.state.selectedModelValue}
+            onValueChange={this.onModelValueChange.bind(this)}>
+            {this.state.modelList}
           </Picker>
 
 

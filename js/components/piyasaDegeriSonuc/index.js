@@ -19,17 +19,65 @@ class PiyasaDegeriSonuc extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
 
-    };
+    this.state = {
+      pazarAnalizim: {},
+      ortKM: '',
+      ortTL: '',
+    }
+
   }
 
   componentWillMount() {
     console.log('piyasa degeri sonuc cwm.');
+    this._fetchPazarAnalizim();
   }
 
-  _fetchPiyasaAnalizim() {
+  _fetchPazarAnalizim() {
+    console.log('_fetchPazarAnalizim');
 
+    fetch('https://otokaca.com/ikinci-el-fiyatlari/PazarAnalizim', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        markaId: this.props.oto.markaId,
+        seriId: this.props.oto.seriId,
+        yilId: this.props.oto.yil,
+        modelId: this.props.oto.modelId,
+        vitesId: this.props.oto.vitesId,
+      })
+    }).then(responseData => {
+      // console.log('response : ', value, responseData.json());
+      responseData.json().then( response => {
+        console.log('PazarAnalizim response: ', response);
+        let jsonResponse = JSON.parse(response);
+        let ortKM = '0';
+        let ortTL = '0';
+        if (jsonResponse.rows.length === 2) {
+          ortKM = jsonResponse.rows[1].c[2].f;
+          ortTL = jsonResponse.rows[0].c[2].f;
+        }
+        else {
+          ortKM = jsonResponse.rows[3].c[2].f;
+          ortTL = jsonResponse.rows[1].c[2].f;
+        }
+
+        console.log('PazarAnalizim json response: ', jsonResponse, ortKM, ortTL);
+
+        this.setState({
+          pazarAnalizim: jsonResponse,
+          ortKM: ortKM,
+          ortTL: ortTL,
+        });
+
+      });
+
+    }).catch(err => {
+      console.log('PazarAnalizim err: ', err);
+    })
   }
 
   _fetchPiyasaDegerim() {
@@ -74,14 +122,25 @@ class PiyasaDegeriSonuc extends Component {
             :
             <Text />
           }
+          {this.props.oto.model !== '-1' ?
+            <Text>
+              {this.props.oto.model}
+            </Text>
+            :
+            <Text />
+          }
           <View
             style={{
-              marginTop: 5,
+              marginTop: 15,
+              marginBottom: 15,
               borderBottomColor: 'black',
               borderBottomWidth: 1,
             }}
           />
-
+        <Text>
+          Bu tür araçlar ortalama <Text style={{color: 'red'}}>{this.state.ortKM}</Text> km kullanılmıştır ve
+          ortalama <Text style={{color: 'red'}}>{this.state.ortTL}</Text> TL civarında fiyat istenmektedir.
+        </Text>
 
 
 

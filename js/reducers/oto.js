@@ -10,6 +10,8 @@ export type State = {
   seri: string,
   vites: string,
   yil: string,
+  model: string,
+  modelId: string,
 }
 
 const initialState = {
@@ -20,6 +22,8 @@ const initialState = {
   seri: '',
   vites: '',
   yil: '',
+  model: '',
+  modelId: '',
 }
 
 export default function (state:State = initialState, action:Action): State {
@@ -33,6 +37,8 @@ export default function (state:State = initialState, action:Action): State {
       seriId: action.payload.seriId,
       vitesId: action.payload.vitesId,
       yil: action.payload.yil,
+      model: action.payload.model,
+      modelId: action.payload.modelId,
     };
   }
   return state;
